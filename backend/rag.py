@@ -117,16 +117,17 @@ answer_parser = StructuredOutputParser.from_response_schemas([_answer_schema])
 # ── Prompt Template (from Update_Chaining notebook) ───────────────────────────
 
 PROMPT = PromptTemplate(
-    input_variables=["context", "question", "format_instructions"],
+    input_variables=["context", "question"],
     template=(
         "You are CiteWise, an academic AI assistant. "
         "Your job is to answer a student's question using ONLY the document passages provided below. "
         "Do not use any external knowledge. "
+        "Write a clear, concise answer in plain prose — no JSON, no bullet symbols, no markdown. "
         "If the passages do not contain the answer, say: "
         "\"The document does not appear to contain information about this topic.\"\n\n"
         "Context (retrieved passages):\n{context}\n\n"
         "Question: {question}\n\n"
-        "Respond ONLY in the JSON format below:\n{format_instructions}"
+        "Answer:"
     ),
 )
 
@@ -364,20 +365,10 @@ def ask(doc: Document, question: str) -> tuple[str, list[Source]]:
     prompt_text = PROMPT.format(
         context=context,
         question=question,
-        format_instructions=answer_parser.get_format_instructions(),
     )
 
-    # ── 5. Generate with LLM chain ──────────────────────────────────────────
+    # ── 5. Generate with LLM ────────────────────────────────────────────────
     llm = get_llm()
-    raw_output = llm._call(prompt_text)  # direct call to avoid chain overhead
-
-    # ── 6. Parse output (Update_OutputParser style) ─────────────────────────
-    try:
-        json_block = extract_json_block(raw_output)
-        parsed = answer_parser.parse(json_block)
-        answer_text = str(parsed.get("answer", raw_output)).strip()
-    except Exception:
-        # Graceful degradation: return raw text if parsing fails
-        answer_text = raw_output.strip()
+    answer_text = llm._call(prompt_text).strip()
 
     return answer_text, sources
