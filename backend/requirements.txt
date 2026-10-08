@@ -1,0 +1,31 @@
+# ── Core API ──────────────────────────────────────────────────────────────────
+fastapi
+uvicorn[standard]
+python-multipart
+
+# ── RAG pipeline ──────────────────────────────────────────────────────────────
+faiss-cpu
+langchain
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-text-splitters
+pypdf
+
+# ── Embeddings (sentence-transformers/all-MiniLM-L6-v2) ──────────────────────
+sentence-transformers
+
+# ── LLM (Mistral-7B-Instruct) ────────────────────────────────────────────────
+# Requires a CUDA GPU for reasonable speed.
+# Set LLM_BACKEND=extractive to skip the LLM entirely (CPU-safe demo mode).
+# Set QUANTIZATION=4bit (default) to load with BitsAndBytes NF4 4-bit quantization.
+# Set QUANTIZATION=none to load in FP16 (requires ~14 GB VRAM).
+transformers>=4.52.4
+accelerate
+bitsandbytes
+torch
+
+# ── OutputParser (Update_OutputParser notebook) ───────────────────────────────
+# langchain-classic ships ResponseSchema / StructuredOutputParser.
+# If the package is unavailable, rag.py falls back to langchain.output_parsers.
+langchain-classic
